@@ -1,0 +1,110 @@
+@keyframes rotate {
+  0% {
+    transform: rotateZ(0deg);
+  }
+
+  100% {
+    transform: rotateZ(360deg);
+  }
+}
+
+.loader {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 16px;
+  z-index: 999999;
+}
+
+.loader.fixed {
+  position: fixed;
+}
+
+.loader div {
+  width: 50px;
+  height: 50px;
+  border-radius: 50px;
+  border: 5px solid rgba(183, 183, 183, 0.7);
+  border-left-color: rgba(0, 0, 0, 0.7);
+  animation: rotate 1s linear 0s infinite both;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.submit-socials {
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0px 0px 20px 6px rgba(0, 0, 0, 0.5);
+  position: relative;
+  max-width: 650px;
+}
+
+#submit-socials {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#submit-socials fieldset {
+  border: none;
+  padding: 0;
+}
+
+#submit-socials fieldset,
+#submit-socials .form-group:not(fieldset .form-group) {
+  width: 70%;
+}
+
+#submit-socials fieldset .form-group {
+  width: 100%;
+}
+
+#submit-socials fieldset .form-group input,
+#submit-socials .form-group select,
+#submit-socials .form-group textarea {
+  width: 100%;
+}
+
+#submit-socials .form-group.description,
+#submit-socials .form-group.submit-btn,
+#submit-socials fieldset {
+  display: none;
+}
+
+#submit-socials fieldset.active,
+#submit-socials .form-group.description.active,
+#submit-socials .form-group.submit-btn.active {
+  display: flex;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 20px;
+}
+
+.form-group-title {
+  margin-bottom: 10px;
+}
+
+select.form-control {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+#submit-socials .form-group input {
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+#submit-socials .form-group textarea {
+  padding: 4px 8px;
+  border-radius: 8px;
+}

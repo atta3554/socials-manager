@@ -1,0 +1,98 @@
+.big-text {
+  font-size: 1rem;
+}
+
+.my-0 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.me-5 {
+  margin-inline-end: 1rem;
+}
+
+.ms-10 {
+  margin-inline-start: 2rem;
+}
+
+.ms-5 {
+  margin-inline-start: 1rem;
+}
+
+.mt-2 {
+  margin-top: 10px;
+}
+
+.wrap .notice {
+  margin-bottom: 0;
+}
+
+.providers {
+  padding-top: 20px;
+}
+
+.field-box:not(:nth-child(4)) {
+  margin-top: 30px;
+}
+
+.field {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.field > [class*="-provider"] {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+}
+
+.field > [class*="-provider"] label,
+.field > [class*="-actor-id"] label,
+.field > [class*="-official-data"] label {
+  margin-bottom: 5px;
+}
+
+.field-box [class*="-actor-id"],
+.field-box [class*="-official-data"] {
+  flex-direction: column;
+  align-items: flex-start;
+  display: none;
+  margin-inline-start: 1rem;
+}
+
+.field-box [class*="-official-data"] {
+  flex-direction: row;
+  align-items: center;
+}
+
+.field-box [class*="-actor-id"].active,
+.field-box [class*="-official-data"].active {
+  display: flex;
+}
+
+.social-actor-settings,
+.social-official-settings {
+  margin-top: 5px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.field-box .checkbox {
+  margin-bottom: 10px;
+  width: 160px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.field-box .checkbox label {
+  cursor: pointer;
+}
+
+input[type="submit"] {
+  margin-top: 20px;
+}
