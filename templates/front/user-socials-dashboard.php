@@ -12,21 +12,22 @@
 */
 
 use SocialsManager\Utils\SocialUtils as SocialUtils;
+use SocialsManager\Utils\RouteUtils as RouteUtils;
 
 if(!defined("ABSPATH")) exit;
 
 ?>
 <div class="user-dashboard">
 
-  <div class="user-socials" data-user-id=<?php echo esc_attr($user_id) ?>>
+  <div class="user-socials" data-user-id="<?php echo esc_attr($user_id) ?>">
     <?php foreach($user_socials as $social) {
-      $social_name  = $social['social_name'];
-      $social_svg   = file_get_contents(esc_url_raw(SM_ASSETS_URL . 'images/' . $social_name . '.svg'));
+      $social_name  = sanitize_key($social['social_name']);
+      $social_svg   = RouteUtils::get_asset_file_contents('images/' . $social_name . '.svg');
       $members      = SocialsManager\Utils\UserUtils::format_count($social['members_count']);
       $final_social = SocialUtils::extend_social($social);
       $social_url   = SocialUtils::get_user_social_url($final_social);
 
-      echo SocialsManager\Utils\RouteUtils::get_sm_template( 
+      echo RouteUtils::get_sm_template( 
         'sm_get_social_dashboard_box', 
         SM_TMP . 'front/sections/social-dashboard/social-box.php',  
         [

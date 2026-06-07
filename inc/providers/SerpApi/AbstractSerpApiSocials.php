@@ -19,7 +19,7 @@ abstract class AbstractSerpApiSocials implements \SocialsManager\Providers\Socia
     $this->token    = APIUtils::get_api_keys()['serpapi-key'] ?? '';
   }
 
-  public function fetch(array $social_data): array {
+  public function fetch(array $social_data, int $user_id): array {
 
     $user_social_url  = SocialUtils::get_user_social_url($social_data);
 

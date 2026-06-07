@@ -10,7 +10,7 @@ class SocialUtils {
 
     $defaults = array(
       array('social_name' => 'instagram', 'social_label' => __('Instagram', SM_SLUG)    , 'label_for_url' => __('Instagram Profile URL', SM_SLUG) , 'placeholder_for_url' => 'https://www.instagram.com/username'      , 'members_name'=> __('followers',   SM_SLUG) , 'engagement_rate_label'=> __('Engagement Rate', SM_SLUG)  , 'validation_pattern' => '#^(https?:\/\/)?(www\.)?instagram\.com\/([^\/\?\#]+)\/?$#'),
-      array('social_name' => 'youtube'  , 'social_label' => __('YouTube', SM_SLUG)      , 'label_for_url' => __('Youtube Channel URL', SM_SLUG)   , 'placeholder_for_url' => 'https://www.youtube.com/@channelname'    , 'members_name'=> __('subscirbers', SM_SLUG) , 'engagement_rate_label'=> __('View Rate',       SM_SLUG)  , 'validation_pattern' => '#^(https?:\/\/)?(www\.)?youtube\.com\/@([^\/\?\#]+)\/?$#'),
+      array('social_name' => 'youtube'  , 'social_label' => __('YouTube', SM_SLUG)      , 'label_for_url' => __('Youtube Channel URL', SM_SLUG)   , 'placeholder_for_url' => 'https://www.youtube.com/@channelname'    , 'members_name'=> __('subscribers', SM_SLUG) , 'engagement_rate_label'=> __('View Rate',       SM_SLUG)  , 'validation_pattern' => '#^(https?:\/\/)?(www\.)?youtube\.com\/@([^\/\?\#]+)\/?$#'),
       array('social_name' => 'tiktok'   , 'social_label' => __('TikTok', SM_SLUG)       , 'label_for_url' => __('TikTok Profile URL', SM_SLUG)    , 'placeholder_for_url' => 'https://www.tiktok.com/@username'        , 'members_name'=> __('followers',   SM_SLUG) , 'engagement_rate_label'=> __('Engagement Rate', SM_SLUG)  , 'validation_pattern' => '#^(https?:\/\/)?(www\.)?tiktok\.com\/@([^\/\?\#]+)\/?$#'),
       array('social_name' => 'snapchat' , 'social_label' => __('Snapchat', SM_SLUG)     , 'label_for_url' => __('Snapchat Profile URL', SM_SLUG)  , 'placeholder_for_url' => 'https://www.snapchat.com/@username'      , 'members_name'=> __('followers',   SM_SLUG) , 'engagement_rate_label'=> __('View Rate',       SM_SLUG)  , 'validation_pattern' => '#^(https?:\/\/)?(www\.)?snapchat\.com\/@([^\/\?\#]+)\/?$#'),
       array('social_name' => 'google'   , 'social_label' => __('Google Maps', SM_SLUG)  , 'label_for_url' => __('Google Maps URL', SM_SLUG)       , 'placeholder_for_url' => 'https://www.google.com/maps/contrib/...' , 'members_name'=> __('reviewers',   SM_SLUG) , 'engagement_rate_label'=> __('Like Rate',       SM_SLUG)  , 'validation_pattern' => '#^(https?:\/\/)?(www\.)?google\.com\/maps\/contrib\/([^\/\?\#]+)\/?$#')
@@ -40,7 +40,7 @@ class SocialUtils {
     $supported_socials = self::get_supported_socials();
     $selected_socials = self::get_selected_socials();
 
-    $allowed_socials = array_filter($supported_socials, fn($supported_social) => in_array($supported_social['social_name'], $selected_socials));
+    $allowed_socials = array_filter($supported_socials, fn($supported_social) => in_array($supported_social['social_name'], $selected_socials, true));
 
     return array_values($allowed_socials);
   }
@@ -62,7 +62,7 @@ class SocialUtils {
   }
 
   public static function is_social_allowed(string $social): bool {
-    return in_array($social, array_column(self::get_allowed_socials(), 'social_name'));
+    return in_array($social, array_column(self::get_allowed_socials(), 'social_name'), true);
   }
 
   public static function find_supported_social(string $social_name): ?array {
@@ -76,7 +76,16 @@ class SocialUtils {
   }
 
   public static function extend_social(array $social): array {
+    if(empty($social['social_name'])) {
+      throw new \InvalidArgumentException(__('Unsupported social.', SM_SLUG));
+    }
+
     $global_social_data = self::find_supported_social($social['social_name']);
+
+    if(!$global_social_data) {
+      throw new \InvalidArgumentException(__('Unsupported social.', SM_SLUG));
+    }
+
     return array_merge($global_social_data, $social);
   }
 
@@ -147,7 +156,11 @@ class SocialUtils {
   }
 
   public static function get_user_social_url(array $social_data): string {
-    $social_name  = sanitize_text_field( $social_data['social_name'] );
+    if(empty($social_data['social_name'])) {
+      throw new \InvalidArgumentException(__('Unsupported social.', SM_SLUG));
+    }
+
+    $social_name  = sanitize_key( $social_data['social_name'] );
     $url_key      = sanitize_key($social_name . '-url');
     return $social_data[$url_key] ?? throw new \InvalidArgumentException(__($social_data['social_name'] . " URL Not Found", SM_SLUG));
   }

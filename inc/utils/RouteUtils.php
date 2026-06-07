@@ -6,20 +6,23 @@ if(!defined('ABSPATH')) exit();
 
 class RouteUtils {
   public static function is_admin_api_page() {
-    return isset($_GET['page']) AND $_GET['page'] === SM_SLUG;
+    $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+    return $page === SM_SLUG;
   }
 
   public static function is_admin_checkup_page() {
-    return isset($_GET['page']) AND $_GET['page'] === SM_SLUG . '-checkup';
+    $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+    return $page === SM_SLUG . '-checkup';
   }
 
   public static function is_admin_shortcodes_page() {
-    return isset($_GET['page']) AND $_GET['page'] === SM_SLUG . '-shortcodes';
+    $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+    return $page === SM_SLUG . '-shortcodes';
   }
 
   public static function redirect_back($args) {
     
-    $referer = wp_get_referer();
+    $referer = wp_get_referer() ?: admin_url();
     
     $url = add_query_arg( $args, $referer );
 
@@ -67,8 +70,26 @@ class RouteUtils {
     return ob_get_clean();
   }
 
+  public static function get_asset_file_contents(string $relative_path): string {
+    $relative_path = ltrim(str_replace('\\', '/', $relative_path), '/');
+
+    if(strpos($relative_path, '../') !== false) {
+      return '';
+    }
+
+    $asset_root = trailingslashit(wp_normalize_path(SM_ASSETS_PATH));
+    $path       = wp_normalize_path(SM_ASSETS_PATH . $relative_path);
+
+    if(strpos($path, $asset_root) !== 0 || !is_readable($path)) {
+      return '';
+    }
+
+    $contents = file_get_contents($path);
+    return is_string($contents) ? $contents : '';
+  }
+
   public static function create_attachment_from_local_files(string $path): int {
-    if(!file_exists($path)) {
+    if(!file_exists($path) || !is_readable($path)) {
       throw new \RuntimeException(__("Default avatar file not found", SM_SLUG));
     }
 
@@ -112,6 +133,6 @@ class RouteUtils {
   }
 
   public static function get_profile_page_id(): int {
-    return get_option( SM_USER_SOCIALS_DASHBOARD_PAGE_ID_OPTION, true );
+    return get_option( SM_USER_SOCIALS_PUBLIC_PAGE_ID_OPTION, true );
   }
 }

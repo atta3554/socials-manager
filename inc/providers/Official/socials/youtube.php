@@ -30,7 +30,7 @@ class Youtube extends AbstractOfficialSocials{
     try {
       $fetched_data                     = parent::validate_oauth_code($request);
       $access_token                     = parent::get_access_token($fetched_data['oauth_code'], $fetched_data['social_name']);
-      $account_data                     = self::get_account($access_token);error_log(print_r($account_data, true));
+      $account_data                     = self::get_account($access_token);
       $social_data                      = self::select_compatible_social($account_data);
       $final_social                     = array_merge($fetched_data, $social_data);
       $channel_videos                   = self::get_videos($account_data, $access_token);
@@ -44,7 +44,7 @@ class Youtube extends AbstractOfficialSocials{
 
     catch(\Throwable $e) {
       
-      $error_code = $e instanceof \InvaludArgumentException ? 400 : 500;
+      $error_code = $e instanceof \InvalidArgumentException ? 400 : 500;
 
       return new \WP_REST_Response([
         'message' => __($e->getMessage(), SM_SLUG)

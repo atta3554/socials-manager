@@ -25,7 +25,7 @@ $allowed_socials_count = SocialUtils::get_user_allowed_socials_count();
 
 <div class="wrap">
   <div>
-      <h1><?php __("API settings", SM_SLUG) ?></h1>
+      <h1><?php esc_html_e("API settings", SM_SLUG) ?></h1>
   </div>
 
   <?php if(isset($_GET['success']) AND $_GET['success'] === 'true') : ?>
@@ -74,17 +74,17 @@ $allowed_socials_count = SocialUtils::get_user_allowed_socials_count();
       <div class="field-box">
         <p class="big-text my-0"><?php echo __('How many social media accounts can users have on a single social media platform?', SM_SLUG) ?></p>
         <div class="field mt-2">
-          <label class="me-5" for="single_social"><?php echo __('Only one account for each platform') ?></label>
+          <label class="me-5" for="single_social"><?php echo esc_html__('Only one account for each platform', SM_SLUG) ?></label>
           <input type="radio" name="allowed_socials_count" id="single_social" value="single_social" <?php checked( $allowed_socials_count, 'single_social' ) ?>>
         </div>
         <div class="field">
-          <label class="me-5" for="multiple_social"><?php echo __('multiple accounts for each platform') ?></label>
+          <label class="me-5" for="multiple_social"><?php echo esc_html__('multiple accounts for each platform', SM_SLUG) ?></label>
           <input type="radio" name="allowed_socials_count" id="multiple_social" value="multiple_social" <?php checked( $allowed_socials_count, 'multiple_social' ) ?> >
         </div>
       </div>
 
       <div class="field-box">
-        <p class="big-text">Select desired socialss</p>
+        <p class="big-text"><?php esc_html_e('Select desired socials', SM_SLUG) ?></p>
         <?php foreach(SocialUtils::get_supported_socials() as $social) {
           echo RouteUtils::get_sm_template(
             'sm_get_' . $social['social_name'] . '_desired_selection_field',

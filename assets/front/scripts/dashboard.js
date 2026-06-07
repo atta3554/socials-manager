@@ -79,7 +79,7 @@
               }
             });
           },
-          error: (err)=> swalError(JSON.parse(err.responseText)),
+          error: (err)=> swalError(smParseAjaxError(err)),
           complete: ()=> {
             $('.loader').remove();
           }
@@ -120,7 +120,7 @@
         data : $.param(data),
         beforeSend: () => $('<div class="loader"><div></div></div>').insertBefore($form),
         success: (res)=> swalFire(res, 'success'),
-        error: (err)=> swalError(JSON.parse(err.responseText)),
+        error: (err)=> swalError(smParseAjaxError(err)),
         complete: ()=> {
           $('.loader').remove();
 

@@ -34,7 +34,7 @@ class APIUtils {
     return update_option( SM_SELECTED_API_PROVIDER_OPTION, $selected_providers );
   }
 
-  public static function save_api_keys(#[\SensitiveParameter] array $api_keys): bool {
+  public static function save_api_keys(array $api_keys): bool {
     return update_option( SM_API_KEYS_OPTION, $api_keys );
   }
 
@@ -55,35 +55,26 @@ class APIUtils {
     return $selected_providers[$social_name] === $provider;
   }
 
-  public static function get_ext($content_type, $image) {
+  public static function get_ext($content_type, $image): string {
     $accepted_mimes = \SocialsManager\Utils\UserUtils::get_user_accepted_mimes();
+    $mime           = '';
     
     if($content_type){ 
-      if( strpos(';', $content_type) !== false ){
+      if( strpos($content_type, ';') !== false ){
         $header_parts = explode(';', $content_type);
         $mime = strtolower(trim($header_parts[0]));
       } else {
-          $mime = $content_type;
+        $mime = strtolower(trim($content_type));
       }
-      
-      if(in_array($mime, $accepted_mimes)) {
-        $ext = $accepted_mimes[$mime];
-      }else {
-        $ext = '.jpg';
-      }
-    } else {
-      $mime = getimagesizefromstring($image)['mime'];
-      if($mime) {
-        if(in_array($mime, $accepted_mimes)) {
-          $ext = $accepted_mimes[$mime];
-        } else {
-          $ext = '.jpg';
-        }
-      }else {
-        $ext = '.jpg';
+    } elseif(is_string($image) && $image !== '') {
+      $image_info = @getimagesizefromstring($image);
+
+      if(!empty($image_info['mime'])) {
+        $mime = strtolower(trim($image_info['mime']));
       }
     }
-    return $ext;
+
+    return $accepted_mimes[$mime] ?? 'jpg';
   }
 
   public static function get_avatar(string $url, string $username, string $social): int|\WP_Error {
@@ -92,7 +83,15 @@ class APIUtils {
     require_once(ABSPATH . 'wp-admin/includes/image.php');
     
     $default_avatar_attachment_id = \SocialsManager\Utils\RouteUtils::get_default_avatar_attachment_id();
-    $res = wp_remote_get($url);
+
+    if(empty($url) || !wp_http_validate_url($url)) {
+      return $default_avatar_attachment_id;
+    }
+
+    $res = wp_remote_get($url, [
+      'timeout'     => 15,
+      'redirection' => 3,
+    ]);
     
     if(is_wp_error($res)) {
       return $default_avatar_attachment_id;
@@ -106,18 +105,27 @@ class APIUtils {
     
     $content_type = wp_remote_retrieve_header($res, 'content-type');
     $image        = wp_remote_retrieve_body($res);
+
+    if(empty($image)) {
+      return $default_avatar_attachment_id;
+    }
     
     $ext          = self::get_ext($content_type, $image);
-    $file_name    = sanitize_file_name($username . '-' . $social . "-avatar") . '.' . $ext;
-    $upload       = wp_upload_bits($file_name, null, $image);
-    
-    if($upload['error'] !== false) {
+    $file_name    = sanitize_file_name($username . '-' . $social . "-avatar." . $ext);
+    $tmp_file     = wp_tempnam($file_name);
+
+    if(!$tmp_file) {
+      return $default_avatar_attachment_id;
+    }
+
+    if(file_put_contents($tmp_file, $image) === false) {
+      @unlink($tmp_file);
       return $default_avatar_attachment_id;
     }
     
     $file_array = array(
       'name'=> $file_name,
-      'tmp_name'=> $upload['file']
+      'tmp_name'=> $tmp_file
     );
 
     $desc = sanitize_text_field($social . " avatar of " . $username);
@@ -125,6 +133,7 @@ class APIUtils {
     $attachment_id = media_handle_sideload($file_array, 0, $desc);
     
     if(is_wp_error($attachment_id)) {
+      @unlink($tmp_file);
       return $default_avatar_attachment_id;
     }
     

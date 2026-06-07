@@ -72,13 +72,21 @@ class Menu {
   public function save_api_settings(): void {
 
     check_admin_referer( 'sm_save_provider', SM_NONCE_NAME );
+    
+    if(!current_user_can('manage_options')) {
+      wp_die(
+        esc_html__('You do not have permission to update these settings.', SM_SLUG),
+        esc_html__('Forbidden', SM_SLUG),
+        ['response' => 403]
+      );
+    }
 
-    $selected_providers     = isset($_POST['providers'])              ? UserUtils::sanitize_array( $_POST['providers'] )          : [];
-    $actor_ids              = isset($_POST['actor_ids'])              ? UserUtils::sanitize_array( $_POST['actor_ids'] )          : [];
-    $official_datas         = isset($_POST['official_datas'])         ? UserUtils::sanitize_array( $_POST['official_datas'] )     : [];
-    $selected_socials       = isset($_POST['socials'])                ? UserUtils::sanitize_array( $_POST['socials'] )            : [];
-    $api_keys               = isset($_POST['keys'])                   ? UserUtils::sanitize_array( $_POST['keys'] )               : [];
-    $allowed_socials_count  = isset($_POST['allowed_socials_count'])  ? sanitize_text_field( $_POST['allowed_socials_count'] )    : '';
+    $selected_providers     = isset($_POST['providers']) && is_array($_POST['providers'])                   ? UserUtils::sanitize_array( $_POST['providers'] )                       : [];
+    $actor_ids              = isset($_POST['actor_ids']) && is_array($_POST['actor_ids'])                   ? UserUtils::sanitize_array( $_POST['actor_ids'] )                       : [];
+    $official_datas         = isset($_POST['official_datas']) && is_array($_POST['official_datas'])         ? UserUtils::sanitize_array( $_POST['official_datas'] )                  : [];
+    $selected_socials       = isset($_POST['socials']) && is_array($_POST['socials'])                       ? UserUtils::sanitize_array( $_POST['socials'] )                         : [];
+    $api_keys               = isset($_POST['keys']) && is_array($_POST['keys'])                             ? UserUtils::sanitize_array( $_POST['keys'] )                            : [];
+    $allowed_socials_count  = isset($_POST['allowed_socials_count'])  ? sanitize_text_field( wp_unslash($_POST['allowed_socials_count']) )     : '';
 
     \SocialsManager\Providers\Apify\ApifyUtils::save_actor_ids($actor_ids);
     \SocialsManager\Providers\Official\OfficialUtils::save_officials_datas($official_datas);
@@ -94,10 +102,16 @@ class Menu {
   public function validate_socials(): void {
     check_ajax_referer( 'checkup_nonce', SM_NONCE_NAME );
 
-    $social_name  = isset($_POST['social'])   && !empty($_POST['social'])   ? sanitize_text_field( $_POST['social'] )   : '';
-    $user         = isset($_POST['user-id'])  && !empty($_POST['user-id'])  ? absint( $_POST['user-id'] )               : '';
+    if(!current_user_can('manage_options')) {
+      wp_send_json_error(['message'=> __('Unauthorized user', SM_SLUG)], 403);
+    }
 
-    
+    $social_name  = isset($_POST['social'])   && !empty($_POST['social'])   ? sanitize_key( wp_unslash($_POST['social']) ) : '';
+    $user         = isset($_POST['user-id'])  && !empty($_POST['user-id'])  ? absint( $_POST['user-id'] )                 : 0;
+
+    if(empty($social_name) || empty($user)) {
+      wp_send_json_error(['message'=> __('Invalid data', SM_SLUG)], 400);
+    }
 
     wp_send_json_success( 'success' );
   }

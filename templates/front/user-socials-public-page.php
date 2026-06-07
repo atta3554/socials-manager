@@ -25,12 +25,13 @@ if(!defined("ABSPATH")) exit;
   } 
   ?>
 
-  <div class="socials-wrapper" data-user-id=<?php echo esc_attr($user_id) ?>>
+  <div class="socials-wrapper" data-user-id="<?php echo esc_attr($user_id) ?>">
     <?php foreach($user_socials as $social) {
       $social_name    = $social['social_name'];
       $social_texture = SM_ASSETS_URL . 'textures/' . $social_name . '.png';
-      $avatar_id      = $social['avatar'];
-      $avatar_url     = get_attachment_link( $avatar_id );
+      $avatar_id      = isset($social['avatar']) ? absint($social['avatar']) : 0;
+      $avatar_url     = $avatar_id ? wp_get_attachment_image_url( $avatar_id, 'thumbnail' ) : '';
+      $avatar_url     = $avatar_url ?: wp_get_attachment_image_url( SocialsManager\Utils\RouteUtils::get_default_avatar_attachment_id(), 'thumbnail' );
       $members        = SocialsManager\Utils\UserUtils::format_count($social['members_count']);
       $final_social   = SocialUtils::extend_social($social);
 

@@ -7,6 +7,7 @@ if(!defined('ABSPATH')) exit();
  * Description: Theme-independent social account manager and validator.
  * Author: Elmira Ashrafi
  * Version: 1.0.0
+ * Requires PHP: 8.0
  * Text Domain: socials-manager
  */
 

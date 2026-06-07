@@ -15,11 +15,20 @@ class HttpService {
     
     $official_name        = 'official';
     $supported_providers  = \SocialsManager\Utils\APIUtils::get_supported_providers();
-    $official_class       = $supported_providers[$official_name]['class'];
+    $official_class       = $supported_providers[$official_name]['class'] ?? '';
+
+    if(empty($official_class) || !class_exists($official_class)) {
+      return;
+    }
+
     $official_socials     = $official_class::get_provider_socials();
     
     foreach(\SocialsManager\Utils\APIUtils::get_selected_api_providers() as $social=>$provider) {
       if($provider === $official_name) {
+        if(empty($official_socials[$social]) || !is_callable([$official_socials[$social], 'handle_oauth_callback'])) {
+          continue;
+        }
+
         register_rest_route(SM_REST_ROUTE_NAMESPACE, SM_REST_ROUTE_PATH . $social, [
           'methods'             => "GET",
           'callback'            => [$official_socials[$social], 'handle_oauth_callback'],
@@ -31,12 +40,13 @@ class HttpService {
 
   public static function increase_curl_ssl_timeout($handle, array $args, string $url): void {
    
-    // if(!str_contains( $url, 'apify' ) && !str_contains( $url, 'serpapi' )) return;
+    // if(strpos( $url, 'apify' ) === false && strpos( $url, 'serpapi' ) === false) return;
 
-    $social_name  = $_POST['social']['social_name'] ?? '';
+    $posted_social = $_POST['social'] ?? [];
+    $social_name   = is_array($posted_social) && isset($posted_social['social_name']) ? sanitize_key(wp_unslash($posted_social['social_name'])) : '';
     $timeout      = 30;
       
-    if(str_contains( $url, 'apify' ) && $social_name === 'tiktok') {
+    if(strpos( $url, 'apify' ) !== false && $social_name === 'tiktok') {
       $timeout    = 50;
     }
       
@@ -45,6 +55,10 @@ class HttpService {
   }
 
   public static function fetch(string $url, ?array $args = []): array {
+
+    $args = wp_parse_args($args ?? [], [
+      'timeout' => 20,
+    ]);
 
     $res = wp_remote_request( $url, $args );
 
@@ -57,29 +71,40 @@ class HttpService {
         return [
           'success' => false,
           'message' => __("Request timed out! please check your network connectivity", SM_SLUG), 
-          'code'    => $error_code,
+          'code'    => 408,
+          'error_code' => $error_code,
           'body'    => ''
         ];
       }
 
       return [
         'success' => false,
-        'message' => __($error_message, SM_SLUG),
-        'code'    => $error_code,
+        'message' => sanitize_text_field($error_message),
+        'code'    => 500,
+        'error_code' => $error_code,
         'body'    => '',
       ];
     }
 
-    $code = wp_remote_retrieve_response_code($res);
-    $body = wp_remote_retrieve_body($res);
+    $code             = (int) wp_remote_retrieve_response_code($res);
+    $response_message = wp_remote_retrieve_response_message($res);
+    $raw_body         = wp_remote_retrieve_body($res);
+    $body             = json_decode($raw_body, true);
 
-    $body = json_decode($body, true);
-
-    if ($code < 200 || $code >= 300 || empty($body) || !is_array($body)) {error_log(print_r($res, true));
+    if(json_last_error() !== JSON_ERROR_NONE) {
       return [
         'success' => false,
-        'message' => __('Request failed.', SM_SLUG),
-        'code'    => $code,
+        'message' => $response_message ? sanitize_text_field($response_message) : __('Invalid JSON response.', SM_SLUG),
+        'code'    => $code ?: 500,
+        'body'    => $raw_body,
+      ];
+    }
+
+    if ($code < 200 || $code >= 300 || empty($body) || !is_array($body)) {
+      return [
+        'success' => false,
+        'message' => self::get_response_error_message($body, $response_message),
+        'code'    => $code ?: 500,
         'body'    => $body,
       ];
     }
@@ -90,5 +115,24 @@ class HttpService {
         'code'    => $code,
         'body'    => $body,
     ];
+  }
+
+  private static function get_response_error_message($body, string $response_message = ''): string {
+
+    if(is_array($body)) {
+      if(!empty($body['error']['message'])) {
+        return sanitize_text_field($body['error']['message']);
+      }
+
+      if(!empty($body['message'])) {
+        return sanitize_text_field($body['message']);
+      }
+
+      if(!empty($body['errors'][0]['message'])) {
+        return sanitize_text_field($body['errors'][0]['message']);
+      }
+    }
+
+    return $response_message ? sanitize_text_field($response_message) : __('Request failed.', SM_SLUG);
   }
 }

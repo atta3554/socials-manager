@@ -14,7 +14,7 @@ final class OfficialUtils {
     return $official_datas[$social_name] ?? [];
   }
 
-  public static function save_officials_datas(#[\SensitiveParameter] array $official_datas): bool {
+  public static function save_officials_datas(array $official_datas): bool {
     return update_option( SM_OFFICIAL_DATAS_OPTION , $official_datas );
   }
 

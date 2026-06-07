@@ -15,6 +15,11 @@ class ProviderFactory {
   public static function create_provider_instance( string $social_name): ProviderInterface {
 
     $selected_provider  = APIUtils::get_selected_api_providers();
+
+    if(empty($social_name) || empty($selected_provider[$social_name])) {
+      throw new \InvalidArgumentException(__('No provider selected for this social.', SM_SLUG));
+    }
+
     $social_provider    = $selected_provider[$social_name];
 
     $providers = APIUtils::get_supported_providers();

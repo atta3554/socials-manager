@@ -90,11 +90,20 @@ class Shortcodes {
     $error_title  = __("Error", SM_SLUG);
     $user_id      = isset($_POST['user_id']) ? absint( $_POST['user_id'] ) : 0;
     $social_data  = isset($_POST['social']) && is_array($_POST['social']) && count($_POST['social']) > 0 ? UserUtils::sanitize_user_social( $_POST['social'] ) : [];
+    $social_name  = $social_data['social_name'] ?? '';
+
+    if(empty($social_name) || empty($user_id)) {
+      wp_send_json_error( ['message'=> __('invalid data', SM_SLUG), 'title'=> $error_title], 400 );
+    }
+
+    if(!UserUtils::current_user_can_edit($user_id)) {
+      wp_send_json_error( ['message'=> __('UnAuthorized User', SM_SLUG), 'title'=> $error_title], 403 );
+    }
 
     $editing_social = SocialUtils::social_exists($social_data, $user_id);
 
     if(!$editing_social) {
-      wp_send_json_success( ['title'=> $error_title, 'message'=> __('Social not found', SM_SLUG)], 400 );
+      wp_send_json_error( ['title'=> $error_title, 'message'=> __('Social not found', SM_SLUG)], 404 );
     }
 
     try {
@@ -117,12 +126,12 @@ class Shortcodes {
       $remaining_socials  = SocialUtils::remove_user_social($user_id, $editing_social);
       SocialUtils::update_user_socials($user_id, [...$remaining_socials, $new_social]);
 
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
       $error_code = $e instanceof \InvalidArgumentException ? 400 : 500;
       wp_send_json_error([
-        'message' => __($e->getMessage(), SM_SLUG),
+        'message' => sanitize_text_field($e->getMessage()),
         'title'=> $error_title
-      ], 500);
+      ], $error_code);
     } 
 
     wp_send_json_success([
@@ -135,13 +144,23 @@ class Shortcodes {
   public function remove_social() {
     check_ajax_referer( 'sm_remove_social', SM_NONCE_NAME );
 
+    $error_title  = __("Error", SM_SLUG);
     $user_id      = isset($_POST['user']) ? absint( $_POST['user'] ) : 0;
     $social_data  = isset($_POST['social']) && is_array($_POST['social']) && count($_POST['social']) > 0 ? UserUtils::sanitize_user_social( $_POST['social'] ) : [];
+    $social_name  = $social_data['social_name'] ?? '';
+
+    if(empty($social_name) || empty($user_id)) {
+      wp_send_json_error( ['message'=> __('invalid data', SM_SLUG), 'title'=> $error_title], 400 );
+    }
+
+    if(!UserUtils::current_user_can_edit($user_id)) {
+      wp_send_json_error( ['message'=> __('UnAuthorized User', SM_SLUG), 'title'=> $error_title], 403 );
+    }
 
     $deleting_social = SocialUtils::social_exists($social_data, $user_id);
 
     if(!$deleting_social) {
-      wp_send_json_success( ['title'=> __('Error', SM_SLUG), 'message'=> __('Social not found', SM_SLUG)], 400 );
+      wp_send_json_error( ['title'=> $error_title, 'message'=> __('Social not found', SM_SLUG)], 404 );
     }
 
     $remaining_socials = SocialUtils::remove_user_social($user_id, $deleting_social);
@@ -163,11 +182,10 @@ class Shortcodes {
       wp_send_json_error( ['message'=> __('invalid data', SM_SLUG), 'title'=> $error_title], 400 );
     }
 
-    $provider_instance  = \SocialsManager\Services\ProviderFactory::create_provider_instance($social_name);
-    $provider_instance->validate_request($social_data, $user_id, $error_title);
-
     try {
 
+      $provider_instance  = \SocialsManager\Services\ProviderFactory::create_provider_instance($social_name);
+      $provider_instance->validate_request($social_data, $user_id, $error_title);
       $social_instance  = $provider_instance->create_social_instance($social_data);
       $social_response  = $social_instance->fetch($social_data, $user_id);
 
@@ -184,10 +202,10 @@ class Shortcodes {
       $new_social = $social_instance->validate_social($social_data, $social_response['body']);
       SocialUtils::add_user_socials($user_id, $new_social);
 
-    }  catch (\Exception $e) {
+    }  catch (\Throwable $e) {
       $error_code = $e instanceof \InvalidArgumentException ? 400 : 500;
       wp_send_json_error([
-        'message' => __($e->getMessage(), SM_SLUG),
+        'message' => sanitize_text_field($e->getMessage()),
         'title'=> $error_title
       ], $error_code);
     } 
@@ -203,7 +221,9 @@ class Shortcodes {
 
     $users = get_users([
       'meta_key'      => SM_USER_META_KEY,
-      'meta_compare'  => 'EXISTS'
+      'meta_compare'  => 'EXISTS',
+      'fields'        => ['ID', 'user_login', 'user_nicename'],
+      'count_total'   => false,
     ]);
 
     if(empty($users)) return self::get_message('no_users_found');

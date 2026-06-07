@@ -10,8 +10,8 @@ class UserUtils {
     return is_user_logged_in() && ($user_id === get_current_user_id() || current_user_can('edit_user', $user_id));
   }
 
-  public static function sanitize_array($array) {
-    return map_deep($array, 'sanitize_text_field');
+  public static function sanitize_array(array $array): array {
+    return map_deep(wp_unslash($array), 'sanitize_text_field');
   }
 
   public static function get_user_accepted_mimes() {
@@ -29,7 +29,7 @@ class UserUtils {
 
   public static function sanitize_user_social($socials) {
     $raw_socials      = wp_unslash( $socials );
-    $social_name      = sanitize_key( $raw_socials['social_name'] ) ?? '';
+    $social_name      = isset($raw_socials['social_name']) ? sanitize_key( $raw_socials['social_name'] ) : '';
     $social_url       = $raw_socials[$social_name . "-url"]         ?? '';
     $social_desc      = $raw_socials['description']                 ?? '';
     

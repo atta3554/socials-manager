@@ -1,4 +1,30 @@
 jQuery(function($) {
+  window.smParseAjaxError = function(xhr) {
+    if(xhr && xhr.responseJSON) {
+      return xhr.responseJSON;
+    }
+
+    if(xhr && xhr.responseText) {
+      try {
+        return JSON.parse(xhr.responseText);
+      } catch (e) {
+        return {
+          data: {
+            title: 'Error',
+            message: xhr.statusText || 'Request failed.'
+          }
+        };
+      }
+    }
+
+    return {
+      data: {
+        title: 'Error',
+        message: 'Request failed.'
+      }
+    };
+  }
+
   window.sm_ajax = function($form, ajax_data) {
     $.ajax({
       url: ajax_data.ajax_url,
@@ -6,7 +32,7 @@ jQuery(function($) {
       data : $form.serialize(),
       beforeSend: () => $('<div class="loader"><div></div></div>').insertBefore($form),
       success: (res)=> swalFire(res, 'success'),
-      error: (err)=> swalError(JSON.parse(err.responseText)),
+      error: (err)=> swalError(smParseAjaxError(err)),
       complete: ()=> {
         $('.loader').remove();
 
@@ -24,6 +50,7 @@ jQuery(function($) {
   }
 
   window.swalError = function(response) {
+    response = response && response.data ? response : smParseAjaxError(response);
 
     Swal.fire({
       title: response.data.title,
