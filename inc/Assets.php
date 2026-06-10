@@ -24,8 +24,8 @@ class Assets {
     }
 
     if(RouteUtils::is_admin_api_page()) {
-      wp_enqueue_style('sm-admin-api-styles'        , SM_ASSETS_URL . 'admin/styles/admin-api.css',         [], SM_VERSION);
-      wp_enqueue_script('admin-api-scripts'         , SM_ASSETS_URL . 'admin/scripts/admin-api.js', ['jquery'], SM_VERSION, true);
+      wp_enqueue_script('admin-api-scripts'         , SM_ASSETS_URL . 'admin/scripts/admin-api.js'      , ['jquery'], SM_VERSION, true);
+      wp_enqueue_script('sm-sweet-alert'            , SM_ASSETS_URL . 'front/scripts/sweetalert.min.js' , ['jquery'], SM_VERSION, true );
     }
   }
 
