@@ -6,7 +6,13 @@ Social Manager lets site members submit their social profiles, fetches profile m
 
 ## Live Demo & Preview
 
-Use the live demo pages created by the plugin after activation:
+Live demo:
+
+```text
+https://socials-manager.ashrafisolutions.com/
+```
+
+After installing the plugin on your own WordPress site, these demo pages are created on activation:
 
 - User dashboard: `/socials-dashboard`
 - Public social directory/profile page: `/socials-public`
