@@ -23,7 +23,7 @@ if(empty($form_mode)) return null;
   <form id="submit-socials" >
 
     <?php if($form_mode === 'edition') {
-      RouteUtils::get_sm_template( 
+      echo RouteUtils::get_sm_template( 
         'sm_get_close_edit_form_popup',
         SM_TMP . 'front/sections/submit-socials-form/close-popup-btn.php'
         );

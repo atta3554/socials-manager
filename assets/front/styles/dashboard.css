@@ -21,7 +21,6 @@
   padding: 10px;
   box-sizing: border-box;
   border-radius: 16px;
-  min-width: 400px;
 }
 
 .social-icon,
@@ -29,8 +28,11 @@
   width: 15%;
 }
 
-.social-icon svg {
+.social-icon > * {
   width: 100%;
+  height: 100%;
+  max-width: 92px;
+  max-height: 92px;
 }
 
 .social-info {
@@ -114,7 +116,7 @@
   height: 50px;
   position: absolute;
   z-index: 999;
-  top: 5%;
+  top: 3%;
   left: 3%;
 }
 
@@ -143,6 +145,40 @@
 
 @media screen and (max-width: 990px) {
   .social {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .social > * {
+    width: 100%;
+  }
+
+  .social-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .members-info,
+  .engagement-rate {
+    font-size: 1rem;
+  }
+
+  .submit-socials-wrapper {
+    padding: 0 20px;
+  }
+
+  .submit-socials {
+    width: 100%;
+    min-width: unset;
+  }
+
+  #submit-socials fieldset {
+    margin-top: 20px;
+  }
+
+  #submit-socials fieldset,
+  #submit-socials .form-group:not(fieldset .form-group) {
     width: 100%;
   }
 }

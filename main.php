@@ -6,14 +6,14 @@ if(!defined('ABSPATH')) exit();
  * Plugin Name: Social manager
  * Description: Theme-independent social account manager and validator.
  * Author: Elmira Ashrafi
- * Version: 1.0.1
+ * Version: 1.0.5
  * Requires PHP: 8.0
  * Text Domain: socials-manager
  */
 
 
 // Define constants 
-define("SM_VERSION", "1.0.1");
+define("SM_VERSION", "1.0.5");
 define("SM_FILE", __FILE__);
 define("SM_PATH", plugin_dir_path( SM_FILE ));
 define("SM_URL", plugin_dir_url( SM_FILE ));
