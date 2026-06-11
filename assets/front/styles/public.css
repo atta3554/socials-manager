@@ -58,3 +58,9 @@
   width: 100%;
   border-radius: 8px;
 }
+
+@media screen and (max-width: 990px) {
+  .social {
+    width: 100%;
+  }
+}
