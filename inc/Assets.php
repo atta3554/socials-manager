@@ -15,18 +15,19 @@ class Assets {
   public function enqueue_admin_assets() {
 
     if(RouteUtils::is_admin_shortcodes_page()) {
-      wp_enqueue_style('sm-admin-shortcodes-styles'  , SM_ASSETS_URL . 'admin/styles/admin-shortcodes.css', [], SM_VERSION);
+      wp_enqueue_style('sm-admin-shortcodes-styles' , SM_ASSETS_URL . 'admin/styles/admin-shortcodes.css' , [         ], SM_VERSION);
     }
 
     if(RouteUtils::is_admin_checkup_page()) {
-      wp_enqueue_style('sm-admin-checkup-styles'    , SM_ASSETS_URL . 'admin/styles/admin-checkup.css',     [], SM_VERSION);
-      wp_enqueue_script('sm-admin-checkup-scripts'  , SM_ASSETS_URL . 'admin/scripts/admin-checkup.js', ['jquery'], SM_VERSION, true);
+      wp_enqueue_style('sm-admin-checkup-styles'    , SM_ASSETS_URL . 'admin/styles/admin-checkup.css'    , [         ], SM_VERSION);
+      wp_enqueue_script('sm-admin-checkup-scripts'  , SM_ASSETS_URL . 'admin/scripts/admin-checkup.js'    , ['jquery' ], SM_VERSION, true);
     }
 
     if(RouteUtils::is_admin_api_page()) {
-      wp_enqueue_script('admin-api-scripts'         , SM_ASSETS_URL . 'admin/scripts/admin-api.js'      , ['jquery'], SM_VERSION, true);
-      wp_enqueue_script('sm-sweet-alert'            , SM_ASSETS_URL . 'front/scripts/sweetalert.min.js' , ['jquery'], SM_VERSION, true );
+      wp_enqueue_style('sm-admin-api-styles'        , SM_ASSETS_URL . 'admin/styles/admin-api.css'        , [         ], SM_VERSION);
+      wp_enqueue_script('sm-admin-api-scripts'      , SM_ASSETS_URL . 'admin/scripts/admin-api.js'        , ['jquery' ], SM_VERSION, true);
     }
+    
   }
 
   public function enqueue_front_assets() {
